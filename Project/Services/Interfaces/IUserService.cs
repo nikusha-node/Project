@@ -1,5 +1,12 @@
-﻿namespace Project.Services.Interfaces;
+﻿using System.Collections.Generic;
+using Project.Models;
 
-internal class IUserService
+namespace Project.Services.Interfaces;
+
+public interface IUserService
 {
+    List<User> GetAll();
+    User GetById(int id);
+
+    User Create(string username);
 }

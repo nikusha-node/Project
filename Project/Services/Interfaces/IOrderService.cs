@@ -1,5 +1,10 @@
-﻿namespace Project.Services.Interfaces;
+﻿using Project.Models;
 
-internal class IOrderService
+namespace Project.Services.Interfaces;
+
+public interface IOrderService
 {
+    Order Checkout(int userId);
+
+    List<Order> GetUserOrders(int userId);
 }

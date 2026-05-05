@@ -1,5 +1,13 @@
-﻿namespace Project.Services.Interfaces;
+﻿using System.Collections.Generic;
+using Project.Models;
 
-internal class IGameService
+namespace Project.Services.Interfaces;
+
+public interface IGameService
 {
+    List<Game> GetAll();
+    Game GetById(int id);
+
+    void Add(Game game);
+    void Delete(int id);
 }

@@ -1,5 +1,63 @@
-﻿namespace Project.Menues;
+﻿using Project.Admin;
+using Project.Helpers;
+using Project.Services.Interfaces;
+using Project.UserMenus;
+using System;
 
-internal class MainMenu
+
+namespace Project.UserMenus;
+
+public class MainMenu
 {
+    private readonly AdminMenu _adminMenu;
+    private readonly UserMenu _userMenu;
+    private readonly IAuthService _authService;
+
+    public MainMenu(AdminMenu adminMenu, UserMenu userMenu, IAuthService authService)
+    {
+        _adminMenu = adminMenu;
+        _userMenu = userMenu;
+        _authService = authService;
+    }
+
+    public void Show()
+    {
+        while (true)
+        {
+            Console.WriteLine("\n=== GAME STORE ===");
+            Console.WriteLine("1. Login");
+            Console.WriteLine("2. Register");
+            Console.WriteLine("3. Admin");
+            Console.WriteLine("4. User");
+            Console.WriteLine("0. Exit");
+
+            var choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    var loginName = InputHelper.ReadString("Username: ");
+                    var user = _authService.Login(loginName);
+
+                    Console.WriteLine(user == null ? "User not found" : "Logged in!");
+                    break;
+
+                case "2":
+                    var regName = InputHelper.ReadString("Username: ");
+                    _authService.Register(regName);
+                    Console.WriteLine("Registered and logged in!");
+                    break;
+
+                case "4":
+                    if (_authService.GetCurrentUser() == null)
+                    {
+                        Console.WriteLine("You must login first!");
+                        break;
+                    }
+
+                    _userMenu.Show();
+                    break;
+            }
+        }
+    }
 }
