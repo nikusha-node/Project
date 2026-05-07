@@ -1,45 +1,67 @@
-﻿using Project.Models;
+﻿using Project.Data;
+using Project.Models;
 using Project.Services.Interfaces;
 
-namespace Project.Services.Implementations;
-
-public class OrderService : IOrderService
+namespace Project.Services.Implementations
 {
-    private readonly List<Order> _orders = new();
-    private readonly ICartService _cartService;
-
-    public OrderService(ICartService cartService)
+    public class OrderService : IOrderService
     {
-        _cartService = cartService;
-    }
+        private readonly ICartService _cartService;
+        private readonly DatabaseContext _db;
 
-    public Order Checkout(int userId)
-    {
-        var cart = _cartService.GetCart();
+        private const string PATH = "orders.json";
 
-        if (!cart.Items.Any())
-            return null;
-
-        var order = new Order
+        public OrderService(ICartService cartService, DatabaseContext db)
         {
-            Id = _orders.Count + 1,
-            UserId = userId,
-            Items = cart.Items.Select(i => new OrderItem
+            _cartService = cartService;
+            _db = db;
+
+            var data = FileHandler.LoadFromFile<List<Order>>(PATH);
+
+            if (data != null)
+                _db.Orders = data;
+        }
+
+        public Order? Checkout(int userId)
+        {
+            var cart = _cartService.GetCart();
+
+            if (!cart.Items.Any())
+                return null;
+
+            var order = new Order
             {
-                GameId = i.GameId,
-                Quantity = i.Quantity,
-                PriceAtPurchase = i.PriceAtPurchase
-            }).ToList()
-        };
+                Id = _db.Orders.Count + 1,
+                UserId = userId,
+                Items = new List<OrderItem>(cart.Items),
+                TotalPrice = cart.TotalPrice,
+                CreatedAt = DateTime.Now
+            };
 
-        _orders.Add(order);
-        _cartService.Clear();
+            _db.Orders.Add(order);
 
-        return order;
-    }
+            Save();
 
-    public List<Order> GetUserOrders(int userId)
-    {
-        return _orders.Where(o => o.UserId == userId).ToList();
+            cart.Items.Clear();
+
+            return order;
+        }
+
+        public List<Order> GetAll()
+        {
+            return _db.Orders;
+        }
+
+        private void Save()
+        {
+            FileHandler.SaveToFile(PATH, _db.Orders);
+        }
+
+        public List<Order> GetUserOrders(int userId)
+        {
+            return _db.Orders
+                .Where(o => o.UserId == userId)
+                .ToList();
+        }
     }
 }

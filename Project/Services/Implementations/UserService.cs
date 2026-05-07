@@ -1,27 +1,71 @@
-﻿using Project.Enums;
-using Project.Services.Interfaces;
+﻿using Project.Data;
+using Project.Enums;
 using Project.Models;
-namespace Project.Services.Implementations;
+using Project.Services.Interfaces;
+using System.Linq;
 
-public class UserService : IUserService
+namespace Project.Services.Implementations
 {
-    private readonly List<User> _users = new();
-
-    public List<User> GetAll() => _users;
-
-    public User GetById(int id)
-        => _users.FirstOrDefault(u => u.Id == id);
-
-    public User Create(string username)
+    public class UserService : IUserService
     {
-        var user = new User
-        {
-            Id = _users.Count + 1,
-            Username = username,
-            Role = UserRole.Customer
-        };
+        private readonly DatabaseContext _db;
+        private const string PATH = "users.json";
 
-        _users.Add(user);
-        return user;
+        public UserService(DatabaseContext db)
+        {
+            _db = db;
+
+            var data = FileHandler.LoadFromFile<List<User>>(PATH);
+
+            if (data != null)
+                _db.Users = data;
+        }
+
+        public User Create(string username)
+        {
+            var user = new User
+            {
+                Id = _db.Users.Count + 1,
+                Username = username,
+                Role = UserRole.Customer
+            };
+
+            _db.Users.Add(user);
+
+            Save();
+
+            return user;
+        }
+
+        public User CreateAdmin(string username)
+        {
+            var user = new User
+            {
+                Id = _db.Users.Count + 1,
+                Username = username,
+                Role = UserRole.Admin
+            };
+
+            _db.Users.Add(user);
+
+            Save();
+
+            return user;
+        }
+
+        public List<User> GetAll()
+        {
+            return _db.Users;
+        }
+
+        public User? GetById(int id)
+        {
+            return _db.Users.FirstOrDefault(u => u.Id == id);
+        }
+
+        private void Save()
+        {
+            FileHandler.SaveToFile(PATH, _db.Users);
+        }
     }
 }

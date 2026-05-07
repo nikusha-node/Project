@@ -6,7 +6,7 @@ namespace Project.Services.Interfaces;
 public interface IUserService
 {
     List<User> GetAll();
-    User GetById(int id);
-
+    User? GetById(int id);
     User Create(string username);
+    User CreateAdmin(string username);
 }

@@ -8,4 +8,5 @@ public class Order
     public int UserId { get; set; }
     public List<OrderItem> Items { get; set; } = new();
     public decimal TotalPrice { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
