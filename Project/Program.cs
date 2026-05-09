@@ -3,35 +3,37 @@ using Project.UserMenus;
 using Project.Services.Interfaces;
 using Project.Services.Implementations;
 using Project.Data;
+using Project.Enums;
 
 class Program
 {
     static void Main()
     {
-        
         var db = new DatabaseContext();
 
-        
         IGameService gameService = new GameService(db);
         ICartService cartService = new CartService(gameService);
         IUserService userService = new UserService(db);
         IAuthService authService = new AuthService(userService);
-        IOrderService orderService = new OrderService(cartService, db);
+        OrderService orderService = new OrderService(cartService, db);
 
         
+        if (!userService.GetAll().Any(u => u.Role == UserRole.Admin))
+        {
+            userService.CreateAdmin("admin", "1234");
+        }
+
         var adminMenu = new AdminMenu(gameService);
         var shopMenu = new ShopMenu(gameService, cartService);
         var cartMenu = new CartMenu(cartService, orderService, authService);
         var userMenu = new UserMenu(shopMenu, cartMenu);
         var mainMenu = new MainMenu(adminMenu, userMenu, authService);
 
-        mainMenu.Show();
-
-
-
-        if (!userService.GetAll().Any(u => u.Role == Project.Enums.UserRole.Admin))
+        orderService.OnOrderCreated += order =>
         {
-            userService.CreateAdmin("admin");
-        }
+            Console.WriteLine($"\nOrder #{order.Id} created successfully!");
+        };
+
+        mainMenu.Show();
     }
 }

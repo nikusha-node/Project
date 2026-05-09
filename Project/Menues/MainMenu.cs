@@ -3,6 +3,8 @@ using Project.Helpers;
 using Project.Services.Interfaces;
 using Project.UserMenus;
 using System;
+using System.Data;
+using Project.Enums;
 
 
 namespace Project.UserMenus;
@@ -37,15 +39,38 @@ public class MainMenu
             {
                 case "1":
                     var loginName = InputHelper.ReadString("Username: ");
-                    var user = _authService.Login(loginName);
+                    var loginPassword = InputHelper.ReadString("Password: ");
 
-                    Console.WriteLine(user == null ? "User not found" : "Logged in!");
+                    var user = _authService.Login(loginName, loginPassword);
+
+                    Console.WriteLine(user == null ? "Invalid credentials" : "Logged in!");
                     break;
 
                 case "2":
                     var regName = InputHelper.ReadString("Username: ");
-                    _authService.Register(regName);
+                    var regPassword = InputHelper.ReadString("Password: ");
+
+                    _authService.Register(regName, regPassword);
+
                     Console.WriteLine("Registered and logged in!");
+                    break;
+
+                case "3":
+                    var currentUser = _authService.GetCurrentUser();
+
+                    if (currentUser == null)
+                    {
+                        Console.WriteLine("You must login first!");
+                        break;
+                    }
+
+                    if (currentUser.Role != UserRole.Admin)
+                    {
+                        Console.WriteLine("Access denied! Admin only.");
+                        break;
+                    }
+
+                    _adminMenu.Show();
                     break;
 
                 case "4":

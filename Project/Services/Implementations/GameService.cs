@@ -1,12 +1,11 @@
 ﻿using Project.Data;
 using Project.Models;
 using Project.Services.Interfaces;
-using System.Collections.Generic;
-using System.Linq;
+using Project.Exceptions;
 
 namespace Project.Services.Implementations;
 
-public class GameService : IGameService
+public class GameService : IGameService, IRepository<Game>
 {
     private readonly DatabaseContext _db;
     private const string PATH = "games.json";
@@ -36,9 +35,16 @@ public class GameService : IGameService
 
     public void Delete(int id)
     {
-        var game = GetById(id);
-        if (game != null)
-            _db.Games.Remove(game);
+        var game = _db.Games.FirstOrDefault(g => g.Id == id);
+
+        if (game == null)
+        {
+            throw new NotFoundException();
+        }
+
+        _db.Games.Remove(game);
+
+        Save();
     }
 
     private void Save()

@@ -1,5 +1,9 @@
-﻿namespace Project.Exeptions;
+﻿namespace Project.Exceptions;
 
-internal class NotFoundException
+public class NotFoundException : AppException
 {
+    public NotFoundException() : base("Game not found!")
+    {
+
+    }
 }

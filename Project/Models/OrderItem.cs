@@ -1,6 +1,6 @@
 ﻿namespace Project.Models;
 
-public class OrderItem
+public class OrderItem : BaseEntity
 {
     public int GameId { get; set; }
 

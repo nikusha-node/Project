@@ -4,8 +4,13 @@ using Project.Services.Interfaces;
 
 namespace Project.Services.Implementations
 {
-    public class OrderService : IOrderService
+    public class OrderService : IOrderService, IRepository<Order>
     {
+
+        public delegate void OrderCreatedHandler(Order order);
+
+        public event OrderCreatedHandler OnOrderCreated;
+
         private readonly ICartService _cartService;
         private readonly DatabaseContext _db;
 
@@ -44,6 +49,8 @@ namespace Project.Services.Implementations
 
             cart.Items.Clear();
 
+            OnOrderCreated?.Invoke(order);
+
             return order;
         }
 
@@ -62,6 +69,30 @@ namespace Project.Services.Implementations
             return _db.Orders
                 .Where(o => o.UserId == userId)
                 .ToList();
+        }
+
+        public Order? GetById(int id)
+        {
+            return _db.Orders.FirstOrDefault(o => o.Id == id);
+        }
+
+        public void Add(Order order)
+        {
+            _db.Orders.Add(order);
+
+            Save();
+        }
+
+        public void Delete(int id)
+        {
+            var order = GetById(id);
+
+            if (order != null)
+            {
+                _db.Orders.Remove(order);
+
+                Save();
+            }
         }
     }
 }

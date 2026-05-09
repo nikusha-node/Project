@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Project.Services.Implementations
 {
-    public class UserService : IUserService
+    public class UserService : IUserService, IRepository<User>
     {
         private readonly DatabaseContext _db;
         private const string PATH = "users.json";
@@ -21,37 +21,37 @@ namespace Project.Services.Implementations
                 _db.Users = data;
         }
 
-        public User Create(string username)
+        public User Create(string username, string password)
         {
             var user = new User
             {
                 Id = _db.Users.Count + 1,
                 Username = username,
+                Password = password,
                 Role = UserRole.Customer
             };
 
             _db.Users.Add(user);
-
             Save();
 
             return user;
         }
 
-        public User CreateAdmin(string username)
+        public User CreateAdmin(string username, string password)
         {
             var user = new User
             {
                 Id = _db.Users.Count + 1,
                 Username = username,
+                Password = password,
                 Role = UserRole.Admin
             };
 
             _db.Users.Add(user);
-
             Save();
 
             return user;
-        }
+        } 
 
         public List<User> GetAll()
         {
@@ -66,6 +66,25 @@ namespace Project.Services.Implementations
         private void Save()
         {
             FileHandler.SaveToFile(PATH, _db.Users);
+        }
+
+        public void Add(User user)
+        {
+            _db.Users.Add(user);
+
+            Save();
+        }
+
+        public void Delete(int id)
+        {
+            var user = GetById(id);
+
+            if (user != null)
+            {
+                _db.Users.Remove(user);
+
+                Save();
+            }
         }
     }
 }

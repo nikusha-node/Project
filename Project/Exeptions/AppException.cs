@@ -1,5 +1,9 @@
-﻿namespace Project.Exeptions;
+﻿namespace Project.Exceptions;
 
-internal class AppException
+public class AppException : Exception
 {
+    public AppException(string message) : base(message)
+    {
+        
+    }
 }

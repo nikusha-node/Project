@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Project.Models;
 
-public class Cart
+public class Cart : BaseEntity
 {
     public List<OrderItem> Items { get; set; } = new();
 

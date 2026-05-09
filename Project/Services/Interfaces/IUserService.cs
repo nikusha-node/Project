@@ -7,6 +7,7 @@ public interface IUserService
 {
     List<User> GetAll();
     User? GetById(int id);
-    User Create(string username);
-    User CreateAdmin(string username);
+
+    User Create(string username, string password);
+    User CreateAdmin(string username, string password);
 }
