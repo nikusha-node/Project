@@ -1,4 +1,5 @@
-﻿using Project.Services.Interfaces;
+﻿using Project.Helpers;
+using Project.Services.Interfaces;
 
 namespace Project.UserMenus;
 
@@ -17,21 +18,80 @@ public class ShopMenu
     {
         while (true)
         {
-            Console.WriteLine("\n=== SHOP ===");
+            Console.Clear();
+            LogoHelper.ShowLogo();
 
-            foreach (var g in _gameService.GetAll())
-                Console.WriteLine($"{g.Id}. {g.Name} - {g.Price}$");
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("🛒  GAME SHOP  🛒", ConsoleColor.Yellow);
+            UIHelper.Divider();
 
-            Console.WriteLine("Enter game Id to add to cart (0 to back):");
+            var games = _gameService.GetAll();
 
-            var input = Console.ReadLine();
+            if (!games.Any())
+            {
+                UIHelper.Warning("No games available yet!");
+            }
+            else
+            {
+ 
+                UIHelper.WriteLineCentered(
+                    $"┌─────┬──────────────────────┬───────────────┬───────────┐",
+                    ConsoleColor.DarkCyan
+                );
+                UIHelper.WriteLineCentered(
+                    $"│ {"ID",-3} │ {"NAME",-20} │ {"GENRE",-13} │ {"PRICE",-9} │",
+                    ConsoleColor.DarkBlue
+                );
+                UIHelper.WriteLineCentered(
+                    $"├─────┼──────────────────────┼───────────────┼───────────┤",
+                    ConsoleColor.DarkCyan
+                );
+
+                foreach (var g in games)
+                {
+                    var rowColor = games.ToList().IndexOf(g) % 2 == 0
+                        ? ConsoleColor.Blue
+                        : ConsoleColor.Cyan;
+
+                    UIHelper.WriteLineCentered(
+                        $"│ {g.Id,-3} │ {g.Name,-20} │ {g.Genre,-13} │ {g.Price,8}$ │",
+                        rowColor
+                    );
+                }
+
+                UIHelper.WriteLineCentered(
+                    $"└─────┴──────────────────────┴───────────────┴───────────┘",
+                    ConsoleColor.DarkCyan
+                );
+
+                UIHelper.WriteLineCentered(
+                    $"🎮  {games.Count()} game(s) available",
+                    ConsoleColor.Green
+                );
+            }
+
+            UIHelper.Divider();
+
+            var input = UIHelper.ReadLineCentered("🛒  Enter Game ID to add to cart (0 = back): ", ConsoleColor.Cyan);
             if (input == "0") return;
 
-            int gameId = int.Parse(input);
-
-            _cartService.AddToCart(gameId, 1);
-
-            Console.WriteLine("Added to cart!");
+            if (int.TryParse(input, out int gameId))
+            {
+                var game = games.FirstOrDefault(g => g.Id == gameId);
+                if (game == null)
+                {
+                    UIHelper.Error("Game not found!");
+                }
+                else
+                {
+                    _cartService.AddToCart(gameId, 1);
+                    UIHelper.Success($"'{game.Name}' added to cart! 🎉");
+                }
+            }
+            else
+            {
+                UIHelper.Error("Invalid ID!");
+            }
         }
     }
 }

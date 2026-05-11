@@ -2,17 +2,27 @@
 
 public static class InputHelper
 {
+    private static string ReadCentered(string message)
+    {
+        int screenWidth = Console.WindowWidth;
+        int padding = Math.Max(0, (screenWidth - message.Length) / 2);
+        Console.Write(new string(' ', padding));
+        Console.Write(message);
+        return Console.ReadLine() ?? "";
+    }
+
     public static int ReadInt(string message)
     {
         while (true)
         {
-            Console.Write(message);
-            var input = Console.ReadLine();
+            UIHelper.SetColor(ConsoleColor.Cyan);
+            var input = ReadCentered($"🎮 {message}");
+            UIHelper.ResetColor();
 
             if (int.TryParse(input, out int result))
                 return result;
 
-            Console.WriteLine("Invalid number. Try again.");
+            UIHelper.WriteLineCentered("⚠️  Invalid number. Try again!", ConsoleColor.Red);
         }
     }
 
@@ -20,13 +30,14 @@ public static class InputHelper
     {
         while (true)
         {
-            Console.Write(message);
-            var input = Console.ReadLine();
+            UIHelper.SetColor(ConsoleColor.Cyan);
+            var input = ReadCentered($"💰 {message}");
+            UIHelper.ResetColor();
 
             if (decimal.TryParse(input, out decimal result))
                 return result;
 
-            Console.WriteLine("Invalid price. Try again.");
+            UIHelper.WriteLineCentered("⚠️  Invalid price. Try again!", ConsoleColor.Red);
         }
     }
 
@@ -34,13 +45,14 @@ public static class InputHelper
     {
         while (true)
         {
-            Console.Write(message);
-            var input = Console.ReadLine();
+            UIHelper.SetColor(ConsoleColor.Cyan);
+            var input = ReadCentered($"✏️  {message}");
+            UIHelper.ResetColor();
 
             if (!string.IsNullOrWhiteSpace(input))
                 return input;
 
-            Console.WriteLine("Input cannot be empty.");
+            UIHelper.WriteLineCentered("⚠️  Input cannot be empty. Try again!", ConsoleColor.Red);
         }
     }
 }

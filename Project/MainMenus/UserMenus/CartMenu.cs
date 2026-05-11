@@ -1,9 +1,9 @@
-﻿using Project.Services.Interfaces;
-using System.Linq;
+﻿using Project.Helpers;
+using Project.Services.Interfaces;
 
 namespace Project.UserMenus;
 
-public class CartMenu 
+public class CartMenu
 {
     private readonly ICartService _cartService;
     private readonly IOrderService _orderService;
@@ -20,58 +20,84 @@ public class CartMenu
     {
         while (true)
         {
-            var cart = _cartService.GetCart();
+            Console.Clear();
+            LogoHelper.ShowLogo();
 
-            Console.WriteLine("\n=== CART ===");
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("🧾  MY CART  🧾", ConsoleColor.Yellow);
+            UIHelper.Divider();
+
+            var cart = _cartService.GetCart();
 
             if (!cart.Items.Any())
             {
-                Console.WriteLine("Cart is empty");
+                UIHelper.Warning("Your cart is empty!");
             }
             else
             {
+                UIHelper.WriteLineCentered(
+                    $"{"GAME ID",-10} {"QUANTITY",-10} {"PRICE",-10}",
+                    ConsoleColor.Magenta
+                );
+                UIHelper.WriteLineCentered(new string('─', 35), ConsoleColor.DarkGray);
+
                 foreach (var item in cart.Items)
                 {
-                    Console.WriteLine($"GameId: {item.GameId} | Qty: {item.Quantity}");
+                    UIHelper.WriteLineCentered(
+                        $"{item.GameId,-10} {item.Quantity,-10}",
+                        ConsoleColor.White
+                    );
                 }
 
-                Console.WriteLine($"Total: {cart.TotalPrice}$");
+                UIHelper.Divider();
+                UIHelper.WriteLineCentered(
+                    $"💵  Total: {cart.TotalPrice}$",
+                    ConsoleColor.Green
+                );
             }
 
-            Console.WriteLine("1. Remove Item");
-            Console.WriteLine("2. Checkout");
-            Console.WriteLine("0. Back");
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("1.  ❌  Remove Item", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("2.  ✅  Checkout", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("0.  🚪  Back", ConsoleColor.DarkGray);
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("Enter your choice:", ConsoleColor.White);
 
             var input = Console.ReadLine();
 
             switch (input)
             {
                 case "1":
-                    Console.Write("Game Id: ");
+                    UIHelper.Info("Enter Game ID to remove:");
                     int id = int.TryParse(Console.ReadLine(), out var result) ? result : 0;
                     _cartService.RemoveFromCart(id);
+                    UIHelper.Success("Item removed!");
+                    Console.ReadKey();
                     break;
 
                 case "2":
                     var user = _authService.GetCurrentUser();
-
                     if (user == null)
                     {
-                        Console.WriteLine("You must login!");
+                        UIHelper.Error("You must be logged in to checkout!");
+                        Console.ReadKey();
                         break;
                     }
-
                     var order = _orderService.Checkout(user.Id);
-
                     if (order == null)
-                        Console.WriteLine("Cart is empty!");
+                        UIHelper.Warning("Cart is empty, nothing to checkout!");
                     else
-                        Console.WriteLine("Order placed!");
-
+                        UIHelper.Success($"🎉 Order #{order.Id} placed successfully!");
+                    Console.ReadKey();
                     break;
 
                 case "0":
                     return;
+
+                default:
+                    UIHelper.Error("Invalid choice!");
+                    Console.ReadKey();
+                    break;
             }
         }
     }

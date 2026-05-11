@@ -20,48 +20,32 @@ public class AdminMenu
         while (true)
         {
             Console.Clear();
+            LogoHelper.ShowLogo();
 
-            Console.WriteLine("=================================");
-            Console.WriteLine("         ADMIN PANEL");
-            Console.WriteLine("=================================");
-            Console.WriteLine("1. View Games");
-            Console.WriteLine("2. Add Game");
-            Console.WriteLine("3. Delete Game");
-            Console.WriteLine("4. Search Game");
-            Console.WriteLine("5. Statistics");
-            Console.WriteLine("0. Back");
-            Console.WriteLine("=================================");
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("🛡️   ADMIN PANEL  🛡️", ConsoleColor.Yellow);
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("1.  🎮  View Games", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("2.  ➕  Add Game", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("3.  🗑️   Delete Game", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("4.  🔍  Search Game", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("5.  📊  Statistics", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("0.  🚪  Back", ConsoleColor.DarkGray);
+            UIHelper.Divider();
 
-            string choice = Console.ReadLine();
+            var choice = UIHelper.ReadLineCentered("Enter your choice: ", ConsoleColor.Cyan);
 
             switch (choice)
             {
-                case "1":
-                    ShowGames();
-                    break;
-
-                case "2":
-                    AddGame();
-                    break;
-
-                case "3":
-                    DeleteGame();
-                    break;
-
-                case "4":
-                    SearchGame();
-                    break;
-
-                case "5":
-                    ShowStatistics();
-                    break;
-
-                case "0":
-                    return;
-
+                case "1": ShowGames(); break;
+                case "2": AddGame(); break;
+                case "3": DeleteGame(); break;
+                case "4": SearchGame(); break;
+                case "5": ShowStatistics(); break;
+                case "0": return;
                 default:
-                    Console.WriteLine("Invalid choice!");
-                    Pause();
+                    UIHelper.Error("Invalid choice!");
+                    Console.ReadKey();
                     break;
             }
         }
@@ -70,102 +54,116 @@ public class AdminMenu
     private void ShowGames()
     {
         Console.Clear();
+        LogoHelper.ShowLogo();
+
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("🎮  ALL GAMES  🎮", ConsoleColor.Yellow);
+        UIHelper.Divider();
 
         var games = _gameService.GetAll();
 
-        Console.WriteLine("=========== GAMES ===========");
-
         if (!games.Any())
         {
-            Console.WriteLine("No games found.");
+            UIHelper.Warning("No games found!");
         }
         else
         {
+            UIHelper.WriteLineCentered(
+                $"{"ID",-5} {"NAME",-22} {"GENRE",-15} {"PRICE",-10}",
+                ConsoleColor.Magenta
+            );
+            UIHelper.WriteLineCentered(new string('─', 55), ConsoleColor.DarkGray);
+
             foreach (var game in games)
             {
-                Console.WriteLine(
-                    $"ID: {game.Id} | " +
-                    $"Name: {game.Name} | " +
-                    $"Genre: {game.Genre} | " +
-                    $"Price: {game.Price}$"
+                UIHelper.WriteLineCentered(
+                    $"{game.Id,-5} {game.Name,-22} {game.Genre,-15} {game.Price,-10}$"
                 );
             }
         }
 
-        Pause();
+        UIHelper.Divider();
+        UIHelper.Info("Press any key to go back...");
+        Console.ReadKey();
     }
 
     private void AddGame()
     {
         Console.Clear();
+        LogoHelper.ShowLogo();
 
-        Console.WriteLine("=========== ADD GAME ===========");
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("➕  ADD GAME  ➕", ConsoleColor.Yellow);
+        UIHelper.Divider();
 
         string name = InputHelper.ReadString("Game Name: ").Capitalize();
         decimal price = InputHelper.ReadDecimal("Price: ");
 
-        Console.WriteLine("\nSelect Genre:");
+        UIHelper.WriteLineCentered("Select Genre:", ConsoleColor.Cyan);
+        UIHelper.WriteLineCentered(new string('─', 30), ConsoleColor.DarkGray);
 
         foreach (var genre in Enum.GetValues(typeof(Project.Enums.Genre)))
         {
-            Console.WriteLine($"{(int)genre} - {genre}");
+            UIHelper.WriteLineCentered($"  {(int)genre}  ─  {genre}", ConsoleColor.White);
         }
 
+        UIHelper.Divider();
         int genreChoice = InputHelper.ReadInt("Genre Number: ");
-
         var selectedGenre = (Project.Enums.Genre)genreChoice;
 
-        var game = new Game
+        _gameService.Add(new Game
         {
             Name = name,
             Price = price,
             Genre = selectedGenre
-        };
+        });
 
-        _gameService.Add(game);
-
-        Console.WriteLine("\nGame added successfully!");
-
-        Pause();
+        UIHelper.Success("Game added successfully!");
+        Console.ReadKey();
     }
 
     private void DeleteGame()
     {
         Console.Clear();
+        LogoHelper.ShowLogo();
 
-        Console.WriteLine("=========== DELETE GAME ===========");
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("🗑️   DELETE GAME  🗑️", ConsoleColor.Yellow);
+        UIHelper.Divider();
 
-        int id = InputHelper.ReadInt("Game Id: ");
-
+        int id = InputHelper.ReadInt("Game ID: ");
         var game = _gameService.GetById(id);
 
         if (game == null)
         {
-            Console.WriteLine("Game not found!");
+            UIHelper.Error("Game not found!");
         }
         else
         {
             try
             {
                 _gameService.Delete(id);
-                Console.WriteLine("Game deleted successfully!");
+                UIHelper.Success("Game deleted successfully!");
             }
             catch (NotFoundException ex)
             {
-                Console.WriteLine(ex.Message);
+                UIHelper.Error(ex.Message);
             }
         }
 
-        Pause();
+        Console.ReadKey();
     }
 
     private void SearchGame()
     {
         Console.Clear();
+        LogoHelper.ShowLogo();
 
-        Console.WriteLine("=========== SEARCH GAME ===========");
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("🔍  SEARCH GAME  🔍", ConsoleColor.Yellow);
+        UIHelper.Divider();
 
-        string keyword = InputHelper.ReadString("Enter game name: ");
+        string keyword = InputHelper.ReadString("Search: ");
 
         var games = _gameService.GetAll()
             .Where(g => g.Name.ToLower().Contains(keyword.ToLower()))
@@ -173,69 +171,66 @@ public class AdminMenu
 
         if (!games.Any())
         {
-            Console.WriteLine("No games found.");
+            UIHelper.Warning("No games found!");
         }
         else
         {
+            UIHelper.WriteLineCentered(
+                $"{"ID",-5} {"NAME",-22} {"GENRE",-15} {"PRICE",-10}",
+                ConsoleColor.Magenta
+            );
+            UIHelper.WriteLineCentered(new string('─', 55), ConsoleColor.DarkGray);
+
             foreach (var game in games)
             {
-                Console.WriteLine(
-                    $"ID: {game.Id} | " +
-                    $"Name: {game.Name} | " +
-                    $"Genre: {game.Genre} | " +
-                    $"Price: {game.Price}$"
+                UIHelper.WriteLineCentered(
+                    $"{game.Id,-5} {game.Name,-22} {game.Genre,-15} {game.Price,-10}$"
                 );
             }
         }
 
-        Pause();
-    }
-
-    private void Pause()
-    {
-        Console.WriteLine("\nPress any key to continue...");
+        UIHelper.Divider();
+        UIHelper.Info("Press any key to go back...");
         Console.ReadKey();
     }
-
 
     private void ShowStatistics()
     {
         Console.Clear();
+        LogoHelper.ShowLogo();
+
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("📊  STATISTICS  📊", ConsoleColor.Yellow);
+        UIHelper.Divider();
 
         var games = _gameService.GetAll();
 
-        Console.WriteLine("=========== STATISTICS ===========");
+        UIHelper.WriteLineCentered($"🎮  Total Games  :  {games.Count()}", ConsoleColor.Cyan);
 
-        bool hasGames = games.Any();
-
-        Console.WriteLine($"Has Games: {hasGames}");
-
-        var mostExpensive = games
-            .OrderByDescending(g => g.Price)
-            .FirstOrDefault();
-
+        var mostExpensive = games.OrderByDescending(g => g.Price).FirstOrDefault();
         if (mostExpensive != null)
+            UIHelper.WriteLineCentered(
+                $"💎  Most Expensive  :  {mostExpensive.Name} ({mostExpensive.Price}$)",
+                ConsoleColor.Cyan
+            );
+
+        decimal totalPrice = games.Aggregate(0m, (sum, g) => sum + g.Price);
+        UIHelper.WriteLineCentered($"💰  Total Value  :  {totalPrice}$", ConsoleColor.Cyan);
+
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("📂  Games By Genre:", ConsoleColor.Magenta);
+        UIHelper.WriteLineCentered(new string('─', 30), ConsoleColor.DarkGray);
+
+        foreach (var group in games.GroupBy(g => g.Genre))
         {
-            Console.WriteLine(
-                $"Most Expensive Game: {mostExpensive.Name} ({mostExpensive.Price}$)"
+            UIHelper.WriteLineCentered(
+                $"  {group.Key,-15}  ─  {group.Count()} games",
+                ConsoleColor.White
             );
         }
 
-        var groupedGenres = games
-            .GroupBy(g => g.Genre);
-
-        Console.WriteLine("\nGames By Genre:");
-
-        foreach (var group in groupedGenres)
-        {
-            Console.WriteLine($"{group.Key}: {group.Count()} games");
-        }
-
-        decimal totalPrice = games
-            .Aggregate(0m, (sum, game) => sum + game.Price);
-
-        Console.WriteLine($"\nTotal Games Price: {totalPrice}$");
-
-        Pause();
+        UIHelper.Divider();
+        UIHelper.Info("Press any key to go back...");
+        Console.ReadKey();
     }
 }

@@ -4,11 +4,15 @@ using Project.Services.Interfaces;
 using Project.Services.Implementations;
 using Project.Data;
 using Project.Enums;
-
+using Project.Helpers;
 class Program
 {
     static void Main()
     {
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.InputEncoding = System.Text.Encoding.UTF8;
+        LogoHelper.ShowLogo();
+
         var db = new DatabaseContext();
 
         IGameService gameService = new GameService(db);

@@ -16,15 +16,23 @@ public class GameService : IGameService, IRepository<Game>
 
         var data = FileHandler.LoadFromFile<List<Game>>(PATH);
 
-        if (data != null)
+        if (data != null && data.Any())
+        {
             _db.Games = data;
+        }
+        else
+        {
+            Save();
+        }
     }
 
     public List<Game> GetAll() => _db.Games;
 
 
-    public Game GetById(int id)
-        => _db.Games.FirstOrDefault(g => g.Id == id);
+    public Game? GetById(int id)
+    {
+        return _db.Games.FirstOrDefault(g => g.Id == id);
+    }
 
     public void Add(Game game) 
     {

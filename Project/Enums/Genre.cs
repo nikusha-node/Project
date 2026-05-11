@@ -2,10 +2,16 @@
 
 public enum Genre
 {
-    Action,
+    Action = 1,
     RPG,
+    Horror,
     Shooter,
-    Strategy,
+    Sandbox,
     Sports,
-    Adventure
+    Racing,
+    Adventure,
+    Simulation,
+    Survival,
+    MOBA,
+    BattleRoyale
 }

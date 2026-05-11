@@ -1,4 +1,4 @@
-﻿using Project.UserMenus;
+﻿using Project.Helpers;
 
 namespace Project.UserMenus;
 
@@ -17,23 +17,28 @@ public class UserMenu
     {
         while (true)
         {
-            Console.WriteLine("\n=== USER MENU ===");
-            Console.WriteLine("1. Shop");
-            Console.WriteLine("2. Cart");
-            Console.WriteLine("0. Back");
+            Console.Clear();
+            LogoHelper.ShowLogo();
 
-            var choice = Console.ReadLine();
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("🎮  USER MENU  🎮", ConsoleColor.Yellow);
+            UIHelper.Divider();
+            UIHelper.WriteLineCentered("1.  🛒  Shop", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("2.  🧾  Cart", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("0.  🚪  Back", ConsoleColor.DarkGray);
+            UIHelper.Divider();
+
+            var choice = UIHelper.ReadLineCentered("Enter your choice: ", ConsoleColor.Cyan);
 
             switch (choice)
             {
-                case "1":
-                    _shopMenu.Show();
+                case "1": _shopMenu.Show(); break;
+                case "2": _cartMenu.Show(); break;
+                case "0": return;
+                default:
+                    UIHelper.Error("Invalid choice!");
+                    Console.ReadKey();
                     break;
-                case "2":
-                    _cartMenu.Show();
-                    break;
-                case "0":
-                    return;
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using Project.Models;
 using Project.Services.Interfaces;
+using System.Linq;
 
 namespace Project.Services.Implementations;
 
@@ -18,13 +19,19 @@ public class CartService : ICartService
     public void AddToCart(int gameId, int quantity)
     {
         var game = _gameService.GetById(gameId);
-        if (game == null) return;
 
-        var existing = _cart.Items.FirstOrDefault(i => i.GameId == gameId);
-
-        if (existing != null)
+        if (game == null)
         {
-            existing.Quantity += quantity;
+            Console.WriteLine("Game not found!");
+            return;
+        }
+
+        var existingItem = _cart.Items
+            .FirstOrDefault(i => i.GameId == gameId);
+
+        if (existingItem != null)
+        {
+            existingItem.Quantity += quantity;
         }
         else
         {
