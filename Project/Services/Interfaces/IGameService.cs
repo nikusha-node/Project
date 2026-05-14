@@ -7,8 +7,8 @@ public interface IGameService
 {
     List<Game> GetAll();
     Game? GetById(int id);
-
     void Add(Game game);
     void Delete(int id);
     void Update(Game game);
+    void AddRating(int gameId, int userId, int stars, string comment);
 }

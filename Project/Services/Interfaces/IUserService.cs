@@ -10,4 +10,5 @@ public interface IUserService
 
     User Create(string username, string password);
     User CreateAdmin(string username, string password);
+    void Delete(int id);
 }

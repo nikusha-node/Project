@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Project.Models;
+﻿using Project.Models;
 using Project.Services.Interfaces;
 
 namespace Project.Services.Implementations
@@ -7,7 +6,7 @@ namespace Project.Services.Implementations
     public class AuthService : IAuthService
     {
         private readonly IUserService _userService;
-        private User _currentUser;
+        private User? _currentUser;
 
         public AuthService(IUserService userService)
         {
@@ -21,9 +20,10 @@ namespace Project.Services.Implementations
             return user;
         }
 
-        public User Login(string username, string password)
+        public User? Login(string username, string password)
         {
-            var user = _userService.GetAll().FirstOrDefault(u => u.Username == username);
+            var user = _userService.GetAll()
+                .FirstOrDefault(u => u.Username == username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return null;
@@ -32,6 +32,14 @@ namespace Project.Services.Implementations
             return user;
         }
 
-        public User GetCurrentUser() => _currentUser;
+        public User? GetCurrentUser()
+        {
+            return _currentUser;
+        }
+
+        public void Logout()
+        {
+            _currentUser = null;
+        }
     }
 }

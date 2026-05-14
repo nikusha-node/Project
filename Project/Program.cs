@@ -27,10 +27,10 @@ class Program
             userService.CreateAdmin("admin", "1234");
         }
 
-        var adminMenu = new AdminMenu(gameService);
-        var shopMenu = new ShopMenu(gameService, cartService);
+        var adminMenu = new AdminMenu(gameService, orderService, userService);
+        var shopMenu = new ShopMenu(gameService, cartService, authService, orderService);
         var cartMenu = new CartMenu(cartService, orderService, authService, gameService);
-        var userMenu = new UserMenu(shopMenu, cartMenu);
+        var userMenu = new UserMenu(shopMenu, cartMenu, gameService, authService, orderService, cartService);
         var mainMenu = new MainMenu(adminMenu, userMenu, authService);
 
         orderService.OnOrderCreated += order =>

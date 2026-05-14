@@ -13,30 +13,20 @@ public class GameService : IGameService, IRepository<Game>
     public GameService(DatabaseContext db)
     {
         _db = db;
-
         var data = FileHandler.LoadFromFile<List<Game>>(PATH);
-
         if (data != null && data.Any())
-        {
             _db.Games = data;
-        }
         else
-        {
             Save();
-        }
     }
 
     public List<Game> GetAll() => _db.Games;
 
+    public Game? GetById(int id) => _db.Games.FirstOrDefault(g => g.Id == id);
 
-    public Game? GetById(int id)
+    public void Add(Game game)
     {
-        return _db.Games.FirstOrDefault(g => g.Id == id);
-    }
-
-    public void Add(Game game) 
-    {
-        game.Id = _db.Users.Any() ? _db.Users.Max(u => u.Id) + 1 : 1;
+        game.Id = _db.Games.Any() ? _db.Games.Max(g => g.Id) + 1 : 1;
         _db.Games.Add(game);
         Save();
     }
@@ -44,14 +34,8 @@ public class GameService : IGameService, IRepository<Game>
     public void Delete(int id)
     {
         var game = _db.Games.FirstOrDefault(g => g.Id == id);
-
-        if (game == null)
-        {
-            throw new NotFoundException();
-        }
-
+        if (game == null) throw new NotFoundException();
         _db.Games.Remove(game);
-
         Save();
     }
 
@@ -59,16 +43,38 @@ public class GameService : IGameService, IRepository<Game>
     {
         var existing = _db.Games.FirstOrDefault(g => g.Id == game.Id);
         if (existing == null) throw new NotFoundException();
-
         existing.Name = game.Name;
         existing.Price = game.Price;
         existing.Genre = game.Genre;
-
+        existing.Stock = game.Stock; 
         Save();
     }
 
-    private void Save()
+    public void AddRating(int gameId, int userId, int stars, string comment)
     {
-        FileHandler.SaveToFile(PATH, _db.Games);
+        var game = GetById(gameId);
+        if (game == null) throw new NotFoundException();
+
+
+        var existing = game.Ratings.FirstOrDefault(r => r.UserId == userId);
+        if (existing != null)
+        {
+            existing.Stars = stars;
+            existing.Comment = comment;
+            existing.CreatedAt = DateTime.Now;
+        }
+        else
+        {
+            game.Ratings.Add(new Rating
+            {
+                UserId = userId,
+                Stars = stars,
+                Comment = comment,
+                CreatedAt = DateTime.Now
+            });
+        }
+        Save();
     }
+
+    private void Save() => FileHandler.SaveToFile(PATH, _db.Games);
 }

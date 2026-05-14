@@ -5,6 +5,6 @@ namespace Project.Services.Interfaces;
 public interface IOrderService
 {
     Order? Checkout(int userId);
-
     List<Order> GetUserOrders(int userId);
+    List<Order> GetAll();
 }

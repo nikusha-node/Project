@@ -2,8 +2,6 @@
 using Project.Enums;
 using Project.Models;
 using Project.Services.Interfaces;
-using System.Linq;
-using BCrypt.Net;
 
 namespace Project.Services.Implementations
 {
@@ -15,77 +13,61 @@ namespace Project.Services.Implementations
         public UserService(DatabaseContext db)
         {
             _db = db;
-
             var data = FileHandler.LoadFromFile<List<User>>(PATH);
-
             if (data != null)
                 _db.Users = data;
         }
 
-        public User Create(string username, string password)
+        private User CreateUser(string username, string password, UserRole role)
         {
+
+            if (_db.Users.Any(u => u.Username.ToLower() == username.ToLower()))
+                throw new Exception($"Username '{username}' is already taken!");
+
+
+            if (string.IsNullOrWhiteSpace(username))
+                throw new Exception("Username cannot be empty!");
+
             var user = new User
             {
                 Id = _db.Users.Any() ? _db.Users.Max(u => u.Id) + 1 : 1,
                 Username = username,
                 Password = BCrypt.Net.BCrypt.HashPassword(password),
-                Role = UserRole.Customer
+                Role = role
             };
 
             _db.Users.Add(user);
             Save();
-
             return user;
         }
+
+        public User Create(string username, string password)
+            => CreateUser(username, password, UserRole.Customer);
 
         public User CreateAdmin(string username, string password)
-        {
-            var user = new User
-            {
-                Id = _db.Users.Count + 1,
-                Username = username,
-                Password = BCrypt.Net.BCrypt.HashPassword(password),
-                Role = UserRole.Admin
-            };
+            => CreateUser(username, password, UserRole.Admin);
 
-            _db.Users.Add(user);
-            Save();
-
-            return user;
-        } 
-
-        public List<User> GetAll()
-        {
-            return _db.Users;
-        }
+        public List<User> GetAll() => _db.Users;
 
         public User? GetById(int id)
-        {
-            return _db.Users.FirstOrDefault(u => u.Id == id);
-        }
-
-        private void Save()
-        {
-            FileHandler.SaveToFile(PATH, _db.Users);
-        }
+            => _db.Users.FirstOrDefault(u => u.Id == id);
 
         public void Add(User user)
         {
             _db.Users.Add(user);
-
             Save();
         }
 
         public void Delete(int id)
         {
             var user = GetById(id);
-
             if (user != null)
             {
                 _db.Users.Remove(user);
-
                 Save();
             }
         }
+
+        private void Save() => FileHandler.SaveToFile(PATH, _db.Users);
     }
 }
