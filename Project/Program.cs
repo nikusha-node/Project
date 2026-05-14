@@ -19,9 +19,9 @@ class Program
         ICartService cartService = new CartService(gameService);
         IUserService userService = new UserService(db);
         IAuthService authService = new AuthService(userService);
-        OrderService orderService = new OrderService(cartService, db);
+        OrderService orderService = new OrderService(cartService, db, gameService);
 
-        
+
         if (!userService.GetAll().Any(u => u.Role == UserRole.Admin))
         {
             userService.CreateAdmin("admin", "1234");
@@ -29,7 +29,7 @@ class Program
 
         var adminMenu = new AdminMenu(gameService);
         var shopMenu = new ShopMenu(gameService, cartService);
-        var cartMenu = new CartMenu(cartService, orderService, authService);
+        var cartMenu = new CartMenu(cartService, orderService, authService, gameService);
         var userMenu = new UserMenu(shopMenu, cartMenu);
         var mainMenu = new MainMenu(adminMenu, userMenu, authService);
 

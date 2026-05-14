@@ -23,10 +23,9 @@ namespace Project.Services.Implementations
 
         public User Login(string username, string password)
         {
-            var user = _userService.GetAll()
-                .FirstOrDefault(u => u.Username == username && u.Password == password);
+            var user = _userService.GetAll().FirstOrDefault(u => u.Username == username);
 
-            if (user == null)
+            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return null;
 
             _currentUser = user;

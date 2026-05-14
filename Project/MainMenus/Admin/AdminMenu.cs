@@ -30,6 +30,7 @@ public class AdminMenu
             UIHelper.WriteLineCentered("3.  🗑️   Delete Game", ConsoleColor.Cyan);
             UIHelper.WriteLineCentered("4.  🔍  Search Game", ConsoleColor.Cyan);
             UIHelper.WriteLineCentered("5.  📊  Statistics", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("6.  ✏️   Edit Game", ConsoleColor.Cyan);
             UIHelper.WriteLineCentered("0.  🚪  Back", ConsoleColor.DarkGray);
             UIHelper.Divider();
 
@@ -42,6 +43,7 @@ public class AdminMenu
                 case "3": DeleteGame(); break;
                 case "4": SearchGame(); break;
                 case "5": ShowStatistics(); break;
+                case "6": EditGame(); break;
                 case "0": return;
                 default:
                     UIHelper.Error("Invalid choice!");
@@ -175,23 +177,26 @@ public class AdminMenu
         }
         else
         {
+
             UIHelper.WriteLineCentered(
-                $"{"ID",-5} {"NAME",-22} {"GENRE",-15} {"PRICE",-10}",
+                $"{"ID",-5} {"NAME",-22} {"GENRE",-15} {"PRICE",-10} {"STOCK",-10}",
                 ConsoleColor.Magenta
-            );
-            UIHelper.WriteLineCentered(new string('─', 55), ConsoleColor.DarkGray);
+                );
+
+            UIHelper.WriteLineCentered(new string('─', 65), ConsoleColor.DarkGray);
 
             foreach (var game in games)
             {
                 UIHelper.WriteLineCentered(
-                    $"{game.Id,-5} {game.Name,-22} {game.Genre,-15} {game.Price,-10}$"
+                    $"{game.Id,-5} {game.Name,-22} {game.Genre,-15} {game.Price,-10}$ {game.Stock,-10}",
+                    ConsoleColor.White
                 );
             }
-        }
 
-        UIHelper.Divider();
-        UIHelper.Info("Press any key to go back...");
-        Console.ReadKey();
+            UIHelper.Divider();
+            UIHelper.Info("Press any key to go back...");
+            Console.ReadKey();
+        }
     }
 
     private void ShowStatistics()
@@ -231,6 +236,52 @@ public class AdminMenu
 
         UIHelper.Divider();
         UIHelper.Info("Press any key to go back...");
+        Console.ReadKey();
+    }
+    private void EditGame()
+    {
+        Console.Clear();
+        LogoHelper.ShowLogo();
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("✏️   EDIT GAME  ✏️", ConsoleColor.Yellow);
+        UIHelper.Divider();
+
+        int id = InputHelper.ReadInt("Game ID to edit: ");
+        var game = _gameService.GetById(id);
+
+        if (game == null)
+        {
+            UIHelper.Error("Game not found!");
+            Console.ReadKey();
+            return;
+        }
+
+        UIHelper.Info($"Current Name: {game.Name} (press Enter to keep)");
+        var newName = Console.ReadLine();
+        if (!string.IsNullOrWhiteSpace(newName))
+            game.Name = newName;
+
+        UIHelper.Info($"Current Price: {game.Price}$ (press Enter to keep)");
+        var priceInput = Console.ReadLine();
+        if (decimal.TryParse(priceInput, out decimal newPrice))
+            game.Price = newPrice;
+
+        UIHelper.Info($"Current Stock: {game.Stock} (press Enter to keep)");
+        var stockInput = Console.ReadLine();
+        if (int.TryParse(stockInput, out int newStock))
+            game.Stock = newStock;
+
+        UIHelper.WriteLineCentered("Select new Genre (press Enter to keep):", ConsoleColor.Cyan);
+        foreach (var genre in Enum.GetValues(typeof(Project.Enums.Genre)))
+        {
+            UIHelper.WriteLineCentered($"  {(int)genre}  ─  {genre}", ConsoleColor.White);
+        }
+        var genreInput = Console.ReadLine();
+        if (int.TryParse(genreInput, out int newGenre))
+            game.Genre = (Project.Enums.Genre)newGenre;
+
+        _gameService.Update(game);
+        UIHelper.Success("Game updated successfully!");
         Console.ReadKey();
     }
 }

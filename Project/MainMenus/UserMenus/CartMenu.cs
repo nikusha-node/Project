@@ -1,4 +1,5 @@
 ﻿using Project.Helpers;
+using Project.Services.Implementations;
 using Project.Services.Interfaces;
 
 namespace Project.UserMenus;
@@ -8,12 +9,14 @@ public class CartMenu
     private readonly ICartService _cartService;
     private readonly IOrderService _orderService;
     private readonly IAuthService _authService;
+    private readonly IGameService _gameService;
 
-    public CartMenu(ICartService cartService, IOrderService orderService, IAuthService authService)
+    public CartMenu(ICartService cartService, IOrderService orderService, IAuthService authService, IGameService gameService)
     {
         _cartService = cartService;
         _orderService = orderService;
         _authService = authService;
+        _gameService = gameService;
     }
 
     public void Show()
@@ -36,15 +39,16 @@ public class CartMenu
             else
             {
                 UIHelper.WriteLineCentered(
-                    $"{"GAME ID",-10} {"QUANTITY",-10} {"PRICE",-10}",
+                    $"{"ID",-5} {"NAME",-22} {"QUANTITY",-10} {"PRICE",-10}",
                     ConsoleColor.Magenta
                 );
                 UIHelper.WriteLineCentered(new string('─', 35), ConsoleColor.DarkGray);
 
                 foreach (var item in cart.Items)
                 {
-                    UIHelper.WriteLineCentered(
-                        $"{item.GameId,-10} {item.Quantity,-10}",
+                    var game = _gameService.GetById(item.GameId);
+                    var gameName = game?.Name ?? "Unknown";
+                    UIHelper.WriteLineCentered($"{item.GameId,-5} {gameName,-22} {item.Quantity,-10} {item.PriceAtPurchase,-10}$",
                         ConsoleColor.White
                     );
                 }
@@ -59,6 +63,7 @@ public class CartMenu
             UIHelper.Divider();
             UIHelper.WriteLineCentered("1.  ❌  Remove Item", ConsoleColor.Cyan);
             UIHelper.WriteLineCentered("2.  ✅  Checkout", ConsoleColor.Cyan);
+            UIHelper.WriteLineCentered("3.  📋  Order History", ConsoleColor.Cyan);
             UIHelper.WriteLineCentered("0.  🚪  Back", ConsoleColor.DarkGray);
             UIHelper.Divider();
             UIHelper.WriteLineCentered("Enter your choice:", ConsoleColor.White);
@@ -68,8 +73,7 @@ public class CartMenu
             switch (input)
             {
                 case "1":
-                    UIHelper.Info("Enter Game ID to remove:");
-                    int id = int.TryParse(Console.ReadLine(), out var result) ? result : 0;
+                    int id = InputHelper.ReadInt("Enter Game ID to remove: ");
                     _cartService.RemoveFromCart(id);
                     UIHelper.Success("Item removed!");
                     Console.ReadKey();
@@ -91,6 +95,10 @@ public class CartMenu
                     Console.ReadKey();
                     break;
 
+                case "3":
+                    ShowOrderHistory();
+                    break;
+
                 case "0":
                     return;
 
@@ -100,5 +108,43 @@ public class CartMenu
                     break;
             }
         }
+    }
+    private void ShowOrderHistory()
+    {
+        Console.Clear();
+        LogoHelper.ShowLogo();
+        UIHelper.Divider();
+        UIHelper.WriteLineCentered("📋  ORDER HISTORY  📋", ConsoleColor.Yellow);
+        UIHelper.Divider();
+
+        var user = _authService.GetCurrentUser();
+        var orders = _orderService.GetUserOrders(user.Id);
+
+        if (!orders.Any())
+        {
+            UIHelper.Warning("No orders yet!");
+        }
+        else
+        {
+            foreach (var order in orders)
+            {
+                UIHelper.WriteLineCentered(
+                    $"Order #{order.Id}  |  {order.CreatedAt:dd/MM/yyyy HH:mm}  |  {order.TotalPrice}$",
+                    ConsoleColor.Cyan
+                );
+                foreach (var item in order.Items)
+                {
+                    var game = _gameService.GetById(item.GameId);
+                    UIHelper.WriteLineCentered(
+                        $"   └ {game?.Name ?? "Unknown",-20} x{item.Quantity}  {item.PriceAtPurchase}$",
+                        ConsoleColor.White
+                    );
+                }
+                UIHelper.WriteLineCentered(new string('─', 55), ConsoleColor.DarkGray);
+            }
+        }
+
+        UIHelper.Info("Press any key to go back...");
+        Console.ReadKey();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Project.Models;
+﻿using Project.Exceptions;
+using Project.Models;
 using Project.Services.Interfaces;
 using System.Linq;
 
@@ -19,11 +20,11 @@ public class CartService : ICartService
     public void AddToCart(int gameId, int quantity)
     {
         var game = _gameService.GetById(gameId);
+        if (game == null) throw new NotFoundException();
 
-        if (game == null)
+        if (game.Stock < quantity)
         {
-            Console.WriteLine("Game not found!");
-            return;
+            throw new NotFoundException();
         }
 
         var existingItem = _cart.Items

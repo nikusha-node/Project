@@ -6,8 +6,9 @@ namespace Project.Services.Interfaces;
 public interface IGameService
 {
     List<Game> GetAll();
-    Game GetById(int id);
+    Game? GetById(int id);
 
     void Add(Game game);
     void Delete(int id);
+    void Update(Game game);
 }

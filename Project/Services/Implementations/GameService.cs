@@ -36,7 +36,7 @@ public class GameService : IGameService, IRepository<Game>
 
     public void Add(Game game) 
     {
-        game.Id = _db.Games.Count + 1;
+        game.Id = _db.Users.Any() ? _db.Users.Max(u => u.Id) + 1 : 1;
         _db.Games.Add(game);
         Save();
     }
@@ -51,6 +51,18 @@ public class GameService : IGameService, IRepository<Game>
         }
 
         _db.Games.Remove(game);
+
+        Save();
+    }
+
+    public void Update(Game game)
+    {
+        var existing = _db.Games.FirstOrDefault(g => g.Id == game.Id);
+        if (existing == null) throw new NotFoundException();
+
+        existing.Name = game.Name;
+        existing.Price = game.Price;
+        existing.Genre = game.Genre;
 
         Save();
     }
